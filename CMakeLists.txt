@@ -20,9 +20,9 @@ juce_add_binary_data(AmperEQAssets SOURCES assets/fonts/Inter-Regular.otf assets
 
 juce_add_plugin(AmperEQ
     COMPANY_NAME "AmperEQ Community"
-    BUNDLE_ID org.libreq.audio.libreq
-    PLUGIN_MANUFACTURER_CODE LiEQ
-    PLUGIN_CODE LiEQ
+    BUNDLE_ID org.ampereq.audio.ampereq
+    PLUGIN_MANUFACTURER_CODE AmEQ
+    PLUGIN_CODE AmpE
     FORMATS VST3
     PRODUCT_NAME "AmperEQ"
     IS_SYNTH FALSE
