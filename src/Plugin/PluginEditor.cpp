@@ -5,8 +5,8 @@ namespace {
 namespace colours {
 const juce::Colour window { 0xff0f1218 }, panel { 0xff171b23 }, panelRaised { 0xff262c37 }, plot { 0xff0b0e13 };
 const juce::Colour gridMajor = juce::Colours::white.withAlpha(0.075f), gridMinor = juce::Colours::white.withAlpha(0.03f), zero { 0xff3c4654 };
-const juce::Colour text { 0xffe6ebf0 }, textDim { 0xff8a95a3 }, accent { 0xff58d6bd };
-const juce::Colour preSpectrum { 0xff536273 }, postSpectrum { 0xff49b9a4 };
+const juce::Colour text { 0xffe6ebf0 }, textDim { 0xff8a95a3 }, accent { 0xfff2b45b };
+const juce::Colour preSpectrum { 0xff536273 }, postSpectrum { 0xff55c9d6 };
 const juce::Colour meterHot { 0xfff0a95b }, meterClip { 0xffef5b5b };
 } // namespace colours
 
@@ -1016,10 +1016,13 @@ void AmperEQAudioProcessorEditor::paint(juce::Graphics& g) {
     g.fillRect(0, 45, getWidth(), 1);
     g.setFont(fonts->bold(21.0f));
     g.setColour(colours::text);
-    g.drawText("Libr", 16, 0, 44, 46, juce::Justification::centredLeft);
-    const int width = juce::roundToInt(juce::GlyphArrangement::getStringWidth(fonts->bold(21.0f), "Libr"));
+    g.drawText("Amper", 16, 0, 62, 46, juce::Justification::centredLeft);
+    const int width = juce::roundToInt(juce::GlyphArrangement::getStringWidth(fonts->bold(21.0f), "Amper"));
     g.setColour(colours::accent);
-    g.drawText("EQ", 16 + width, 0, 40, 46, juce::Justification::centredLeft);
+    g.drawText("EQ", 16 + width, 0, 38, 46, juce::Justification::centredLeft);
+    g.setColour(colours::textDim);
+    g.setFont(fonts->regular(10.0f));
+    g.drawText("CIRCUIT-INSPIRED EQUALIZATION", 104, 16, 220, 14, juce::Justification::left);
 }
 
 void AmperEQAudioProcessorEditor::resized() {

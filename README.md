@@ -2,6 +2,10 @@
 
 EQ paramétrico original, libre y comunitario para Linux, C++20 + JUCE + CMake: la música es de todos y para todos.
 
+## Identidad
+
+AmperEQ es la línea experimental de ecualización inspirada en corriente, energía y circuitos. Su interfaz y su DSP evolucionarán de forma independiente, tomando como referencia general los flujos de trabajo de los EQ profesionales sin copiar código, recursos ni marcas propietarias.
+
 ## Estado
 
 Implementado:
