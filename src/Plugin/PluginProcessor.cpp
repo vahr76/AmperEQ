@@ -15,6 +15,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout createLayout() {
 
     layout.add(std::make_unique<juce::AudioParameterBool>(Id { "bypass", 1 }, "Bypass", false));
     layout.add(std::make_unique<juce::AudioParameterFloat>(Id { "output", 1 }, "Output Gain", juce::NormalisableRange<float>(-24.0f, 24.0f, 0.01f), 0.0f, decimals(1)));
+    layout.add(std::make_unique<juce::AudioParameterChoice>(Id { "channelMode", 1 }, "Channel Mode", juce::StringArray { "Stereo", "Mid", "Side", "Left", "Right" }, 0));
 
     for (int i = 0; i < AmperEQAudioProcessor::numBands; ++i) {
         const auto name = "Band " + juce::String(i + 1) + " ";
@@ -56,6 +57,7 @@ AmperEQAudioProcessor::AmperEQAudioProcessor()
     bypassParameter = parameters.getParameter("bypass");
     bypassRaw = parameters.getRawParameterValue("bypass");
     outputRaw = parameters.getRawParameterValue("output");
+    channelModeRaw = parameters.getRawParameterValue("channelMode");
 }
 
 bool AmperEQAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const {
@@ -67,6 +69,7 @@ bool AmperEQAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) c
 void AmperEQAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
     sampleRateForUi.store(sampleRate);
     eq.prepare(sampleRate, samplesPerBlock, getTotalNumOutputChannels());
+    routingDry.setSize(2, samplesPerBlock, false, false, true);
     outputGain.reset(sampleRate, 0.02);
     outputGain.setCurrentAndTargetValue(juce::Decibels::decibelsToGain(outputRaw->load()));
     setLatencySamples(0);
@@ -100,7 +103,33 @@ void AmperEQAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce:
             eq.reset();
         for (int i = 0; i < numBands; ++i)
             eq.setBand(static_cast<std::size_t>(i), readBand(i));
-        eq.process(buffer.getArrayOfWritePointers(), numChannels, numSamples);
+        if (numChannels == 2 && static_cast<int>(channelModeRaw->load() + 0.5f) == 0) {
+            eq.process(buffer.getArrayOfWritePointers(), numChannels, numSamples);
+        } else if (numChannels == 2) {
+            const int mode = juce::jlimit(1, 4, static_cast<int>(channelModeRaw->load() + 0.5f));
+            auto* left = buffer.getWritePointer(0);
+            auto* right = buffer.getWritePointer(1);
+            routingDry.copyFrom(0, 0, left, numSamples);
+            routingDry.copyFrom(1, 0, right, numSamples);
+            for (int sample = 0; sample < numSamples; ++sample) {
+                const float l = left[sample], r = right[sample];
+                if (mode == 1) { left[sample] = (l + r) * 0.70710678f; right[sample] = (l - r) * 0.70710678f; }
+                else if (mode == 2) { left[sample] = (l + r) * 0.70710678f; right[sample] = (l - r) * 0.70710678f; }
+                else if (mode == 3) { right[sample] = 0.0f; }
+                else { left[sample] = 0.0f; }
+            }
+            if (mode == 1) std::fill(right, right + numSamples, 0.0f);
+            if (mode == 2) std::fill(left, left + numSamples, 0.0f);
+            eq.process(buffer.getArrayOfWritePointers(), numChannels, numSamples);
+            for (int sample = 0; sample < numSamples; ++sample) {
+                if (mode == 1) { const float m = left[sample], s = (routingDry.getSample(0, sample) - routingDry.getSample(1, sample)) * 0.70710678f; left[sample] = (m + s) * 0.70710678f; right[sample] = (m - s) * 0.70710678f; }
+                else if (mode == 2) { const float m = (routingDry.getSample(0, sample) + routingDry.getSample(1, sample)) * 0.70710678f, s = right[sample]; left[sample] = (m + s) * 0.70710678f; right[sample] = (m - s) * 0.70710678f; }
+                else if (mode == 3) right[sample] = routingDry.getSample(1, sample);
+                else left[sample] = routingDry.getSample(0, sample);
+            }
+        } else {
+            eq.process(buffer.getArrayOfWritePointers(), numChannels, numSamples);
+        }
         outputGain.setTargetValue(juce::Decibels::decibelsToGain(outputRaw->load()));
         outputGain.applyGain(buffer, numSamples);
     }

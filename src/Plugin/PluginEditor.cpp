@@ -852,6 +852,13 @@ AmperEQAudioProcessorEditor::AmperEQAudioProcessorEditor(AmperEQAudioProcessor& 
     addAndMakeVisible(analyzerButton);
     analyzerButton.onClick = [this] { showAnalyzerMenu(); };
     setAnalyzerMode(EqGraph::AnalyzerMode::InputOutput);
+    channelModeBox.addItemList({ "Stereo", "Mid", "Side", "Left", "Right" }, 1);
+    addAndMakeVisible(channelModeBox);
+    channelModeBox.setSelectedId(1);
+    channelModeBox.onChange = [this] {
+        if (auto* parameter = processor.parameters.getParameter("channelMode"))
+            parameter->setValueNotifyingHost(parameter->convertTo0to1((float) channelModeBox.getSelectedItemIndex()));
+    };
 
     removeButton.onClick = [this] { graph.removeSelectedBand(); };
     panel.addAndMakeVisible(removeButton);
@@ -1037,6 +1044,8 @@ void AmperEQAudioProcessorEditor::resized() {
     bypassButton.setBounds(header.removeFromRight(68));
     header.removeFromRight(6);
     analyzerButton.setBounds(header.removeFromRight(132));
+    header.removeFromRight(8);
+    channelModeBox.setBounds(header.removeFromRight(92));
 
     movePanel(true);
 }

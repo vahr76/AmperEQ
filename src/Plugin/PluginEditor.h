@@ -137,6 +137,7 @@ private:
     OutputMeter meter;
     BandPanel panel;
     juce::TextButton analyzerButton, bypassButton { "Bypass" }, bandOnButton { "On" }, removeButton { "Remove" };
+    juce::ComboBox channelModeBox;
     juce::Slider outputKnob, frequencyKnob, gainKnob, qKnob;
     juce::Label outputLabel, frequencyLabel, gainLabel, qLabel, bandLabel;
     juce::ComboBox typeBox, slopeBox;

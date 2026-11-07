@@ -59,7 +59,9 @@ private:
     std::array<BandParameters, numBands> bands {};
     juce::RangedAudioParameter* bypassParameter {};
     std::atomic<float>* bypassRaw {}, * outputRaw {};
+    std::atomic<float>* channelModeRaw {};
     juce::SmoothedValue<float> outputGain;
+    juce::AudioBuffer<float> routingDry;
     std::atomic<double> sampleRateForUi { 48000.0 };
     bool wasBypassed { false };
     std::array<std::atomic<float>, 2> outputPeaks {};
